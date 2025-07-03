@@ -111,3 +111,11 @@ uvicorn api.main:app --reload
 ```
 
 ---
+
+## 📈 Resultados e Aprendizados
+
+- O modelo obteve 100% de acurácia no conjunto de teste com os dados disponíveis, indicando que o rótulo `contratado` possui padrão claro na base fornecida.
+- O maior desafio foi garantir que a API suportasse dados não vistos, resolvido com a configuração `handle_unknown='use_encoded_value'`.
+- A API está pronta para receber novos dados e pode ser conectada a plataformas de recrutamento automatizado.
+
+---

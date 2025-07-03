@@ -46,4 +46,7 @@ def predict_match(data: MatchInput):
         prediction = model.predict(input_encoded)
         return {"match": bool(prediction[0])}
     except Exception as e:
-        return {"erro": str(e)}
+        return {
+            "erro": "Erro ao processar os dados. Verifique se os valores estão corretos ou compatíveis com o modelo.",
+            "detalhes": str(e)
+        }
