@@ -7,3 +7,6 @@ __pycache__/
 *.pyc
 *.pyo
 *.pyd
+
+# json files from datathon decision
+data/*.json
