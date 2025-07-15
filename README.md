@@ -88,7 +88,7 @@ uvicorn api.main:app --reload
 ```
 
 4.1 Iniciar com Docker:  
-  4.1.1 Builde da imagem:
+  4.1.1 Builde da imagem:  
     ```bash
     docker build -t datathon .
     ```
