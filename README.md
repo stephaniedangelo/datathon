@@ -87,18 +87,19 @@ python model/train_model.py
 uvicorn api.main:app --reload
 ```
 
-4.1 Iniciar com Docker:  
-  4.1.1 Builde da imagem:  
-  
-    ```bash
-    docker build -t datathon .
-    ```  
-    
-  4.1.2 Execucao da imagem:  
-  
-    ```bash
-    docker build -it -p 8000:8000 datathon
-    ```  
+4.1 Iniciar com Docker:
+
+#### 4.1.1 Build da imagem:
+
+```bash
+docker build -t datathon .
+```
+
+#### 4.1.2 Execução da imagem:
+
+```bash
+docker run -it -p 8000:8000 datathon
+```
 
 5. Acesse a documentação da API:
 
