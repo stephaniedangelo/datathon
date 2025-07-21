@@ -1,39 +1,56 @@
 import pandas as pd
-from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OrdinalEncoder
-from sklearn.metrics import classification_report
+from sklearn.metrics import classification_report, accuracy_score, f1_score
 import joblib
+import os
 
-# Carrega o dataset pronto
-df = pd.read_csv('data/dataset_final.csv')  # opcionalmente salve antes no notebook
+# Função para carregar os dados
+def load_data(filepath='data/base_final.csv'):
+    df = pd.read_csv(filepath)
+    return df
 
-# Seleciona colunas para o modelo
-features = [
-    'nivel_academico_x', 'nivel_ingles_x', 'nivel_espanhol_x',
-    'area_atuacao', 'titulo_profissional',
-    'nivel_ingles_y', 'nivel_espanhol_y',
-    'areas_atuacao', 'titulo_vaga', 'tipo_contratacao'
-]
+# Função para preprocessamento e split
+def preprocess_data(df, target_column='contratado'):
+    X = df.drop(columns=[target_column])
+    y = df[target_column]
 
-df_model = df[features + ['contratado']].fillna('Desconhecido')
+    encoder = OrdinalEncoder(handle_unknown='use_encoded_value', unknown_value=-1)
+    X_encoded = encoder.fit_transform(X)
 
-# Codifica os dados categóricos
-encoder = OrdinalEncoder(handle_unknown='use_encoded_value', unknown_value=-1)
-X = encoder.fit_transform(df_model[features])
-y = df_model['contratado']
+    return train_test_split(X_encoded, y, test_size=0.2, random_state=42), encoder
 
-# Divide treino e teste
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+# Função para treinar o modelo
+def train_model(X_train, y_train):
+    model = RandomForestClassifier(n_estimators=100, random_state=42)
+    model.fit(X_train, y_train)
+    return model
 
-# Treina o modelo
-model = RandomForestClassifier(random_state=42)
-model.fit(X_train, y_train)
+# Função principal
+def main():
+    print("🔍 Carregando dados...")
+    df = load_data()
 
-# Avaliação
-y_pred = model.predict(X_test)
-print(classification_report(y_test, y_pred))
+    print("✅ Pré-processando e dividindo os dados...")
+    (X_train, X_test, y_train, y_test), encoder = preprocess_data(df)
 
-# Salva o modelo e o encoder
-joblib.dump(model, 'model/modelo_recrutamento.pkl')
-joblib.dump(encoder, 'model/encoder.pkl')
+    print("🎯 Treinando modelo RandomForest...")
+    model = train_model(X_train, y_train)
+
+    print("📊 Avaliando modelo...")
+    y_pred = model.predict(X_test)
+    print("Accuracy:", round(accuracy_score(y_test, y_pred), 4))
+    print("F1 Score:", round(f1_score(y_test, y_pred), 4))
+    print("Relatório de Classificação:")
+    print(classification_report(y_test, y_pred))
+
+    print("💾 Salvando modelo e encoder...")
+    os.makedirs("model", exist_ok=True)
+    joblib.dump(model, "model/modelo.pkl")
+    joblib.dump(encoder, "model/encoder.pkl")
+
+    print("🚀 Treinamento concluído com sucesso!")
+
+if __name__ == "__main__":
+    main()

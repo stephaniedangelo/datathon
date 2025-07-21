@@ -101,6 +101,9 @@ docker build -t datathon .
 docker run -it -p 8000:8000 datathon
 ```
 
+> ℹ️ **Observação:** ao buildar a imagem com Docker, o modelo será treinado automaticamente e salvo na pasta `/model`.  
+> Isso permite automatizar todo o processo de ponta a ponta, desde os dados até a API funcional.
+
 5. Acesse a documentação da API:
 
 [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
@@ -131,5 +134,3 @@ docker run -it -p 8000:8000 datathon
 - O modelo obteve 100% de acurácia no conjunto de teste com os dados disponíveis, indicando que o rótulo `contratado` possui padrão claro na base fornecida.
 - O maior desafio foi garantir que a API suportasse dados não vistos, resolvido com a configuração `handle_unknown='use_encoded_value'`.
 - A API está pronta para receber novos dados e pode ser conectada a plataformas de recrutamento automatizado.
-
----

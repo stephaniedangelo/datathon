@@ -1,16 +1,26 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import joblib
-import numpy as np
+import pandas as pd
+import logging
 
-app = FastAPI()
+# Configuração de logging
+logging.basicConfig(level=logging.INFO)
 
-# Carregar modelo e encoder
-model = joblib.load("model/modelo_recrutamento.pkl")
-encoder = joblib.load("model/encoder.pkl")
+# Inicialização da API
+app = FastAPI(title="API de Match Candidato-Vaga", version="1.0")
 
-# Definir os campos que a API espera receber
-class MatchInput(BaseModel):
+# Carregamento do modelo e encoder
+try:
+    model = joblib.load("model/modelo.pkl")
+    encoder = joblib.load("model/encoder.pkl")
+    logging.info("Modelo e encoder carregados com sucesso.")
+except Exception as e:
+    logging.error("Erro ao carregar modelo ou encoder: %s", str(e))
+    raise
+
+# Schema de entrada usando Pydantic
+class Item(BaseModel):
     nivel_academico_x: str
     nivel_ingles_x: str
     nivel_espanhol_x: str
@@ -22,31 +32,25 @@ class MatchInput(BaseModel):
     titulo_vaga: str
     tipo_contratacao: str
 
-@app.get("/")
-def home():
-    return {"status": "API está no ar 🚀"}
-
+# Rota principal
 @app.post("/predict")
-def predict_match(data: MatchInput):
-    input_data = [[
-        data.nivel_academico_x,
-        data.nivel_ingles_x,
-        data.nivel_espanhol_x,
-        data.area_atuacao,
-        data.titulo_profissional,
-        data.nivel_ingles_y,
-        data.nivel_espanhol_y,
-        data.areas_atuacao,
-        data.titulo_vaga,
-        data.tipo_contratacao
-    ]]
-    
+def predict(data: Item):
     try:
-        input_encoded = encoder.transform(input_data)
-        prediction = model.predict(input_encoded)
-        return {"match": bool(prediction[0])}
-    except Exception as e:
-        return {
-            "erro": "Erro ao processar os dados. Verifique se os valores estão corretos ou compatíveis com o modelo.",
-            "detalhes": str(e)
+        logging.info(f"Input recebido: {data}")
+        df = pd.DataFrame([data.dict()])
+        df_encoded = encoder.transform(df)
+        pred = model.predict(df_encoded)
+        proba = model.predict_proba(df_encoded)[0][1] if hasattr(model, "predict_proba") else None
+
+        response = {
+            "match": bool(pred[0]),
+            "mensagem": "Candidato compatível" if pred[0] else "Candidato não compatível"
         }
+
+        if proba is not None:
+            response["probabilidade_match"] = round(float(proba), 3)
+
+        return response
+    except Exception as e:
+        logging.error("Erro na predição: %s", str(e))
+        raise HTTPException(status_code=500, detail="Erro ao processar a previsão.")
